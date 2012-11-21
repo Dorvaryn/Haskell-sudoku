@@ -57,7 +57,7 @@ xs `minus` ys = if single xs then xs else xs\\ys
 
 singles = concat . filter single
 
-reduce :: Row Choices -> Row Choices
+reduce :: [Choices] -> [Choices]
 reduce xss = [xs `minus` singles | xs <- xss]
     where singles = concat (filter single xss)
 
@@ -78,3 +78,51 @@ fix f x = if x == x' then x else fix f x'
 
 solve :: Grid -> [Grid]
 solve = filter valid . collapse . fix prune . choices
+
+consistent :: [Choices] -> Bool
+consistent = nodups . concat . filter single
+
+safe :: Matrix Choices -> Bool
+safe m = all consistent (rows m)&&
+         all consistent (cols m)&&
+         all consistent (boxs m)
+
+complete :: Matrix Choices -> Bool
+complete = all (all single)
+
+expand :: Matrix Choices -> [Matrix Choices]
+expand m = [rs1 ++ [r1 ++ [x]:r2] ++ rs2 | x <- xs]
+            where (rs1, r:rs2) = break (any (not . single)) m
+                  (r1, xs:r2) = break (not . single) r
+
+search :: Matrix Choices -> [Grid]
+search m
+    | not (safe m) = []
+    | complete m = collapse m
+    | otherwise = [g | m' <- expand m,
+                       g <- search (prune m')]
+
+solveFast :: Grid -> [Grid]
+solveFast = search . prune . choices
+
+easy :: Grid
+easy = ["2....1.38",
+        "........5",
+        ".7...6...",
+        ".......13",
+        ".981..257",
+        "31....8..",
+        "9..8...2.",
+        ".5..69784",
+        "4..25...."]
+
+try :: Grid
+try =  [".9.7..86.",
+        ".31..5.2.",
+        "8.6......",
+        "..7.5...6",
+        "...3.7...",
+        "5...1.7..",
+        "......1.9",
+        ".2.6..35.",
+        ".54..8.7."]
