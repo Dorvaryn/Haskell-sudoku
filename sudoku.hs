@@ -42,7 +42,7 @@ nodups (x:xs) = all (x/=) xs && nodups xs
 
 type Choices = [Value]
 values :: [Value]
-values = ['1','2','3','4','5','6','7','8','9']
+values = ['1'..'9']
 
 choices :: Grid -> Matrix Choices
 choices = map (map choice)
@@ -53,12 +53,12 @@ single [_] = True
 single _ = False
 
 minus :: Eq a => [a] -> [a] -> [a]
-minus xs ys = if single xs then xs else xs\\ys
+xs `minus` ys = if single xs then xs else xs\\ys
 
 singles = concat . filter single
 
-reduce :: Eq a => [[a]] -> [[a]]
-reduce xss = map (`minus` singles) xss
+reduce :: Row Choices -> Row Choices
+reduce xss = [xs `minus` singles | xs <- xss]
     where singles = concat (filter single xss)
 
 prune :: Matrix Choices -> Matrix Choices
@@ -67,13 +67,13 @@ prune = pruneBy boxs . pruneBy rows . pruneBy cols
 
 cp :: [[a]] -> [[a]]
 cp [] = [[]]
-cp (xs:xss) = [(y:ys)|y<-xs, ys<-cp xss]
+cp (xs:xss) = [y:ys|y<-xs, ys<-cp xss]
 
 collapse :: Matrix [a] -> [Matrix a]
 collapse = cp . map cp
 
 fix :: Eq a => ( a-> a) -> a -> a
-fix f x = if x == x' then x else x'
+fix f x = if x == x' then x else fix f x'
     where x' = f x
 
 solve :: Grid -> [Grid]
