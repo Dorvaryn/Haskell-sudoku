@@ -62,7 +62,10 @@ reduce xss = [xs `minus` singles | xs <- xss]
     where singles = concat (filter single xss)
 
 prune :: Matrix Choices -> Matrix Choices
-prune = pruneBy boxs . pruneBy rows . pruneBy cols
+prune = fix' pruneOne
+
+pruneOne :: Matrix Choices -> Matrix Choices
+pruneOne = pruneBy boxs . pruneBy rows . pruneBy cols
     where pruneBy f = f . map reduce . f
 
 cp :: [[a]] -> [[a]]
@@ -76,7 +79,7 @@ fix' :: Eq a => ( a-> a) -> a -> a
 fix' process = fix (\rec c -> let processed = process c in if c == processed then c else rec processed) 
 
 solve :: Grid -> [Grid]
-solve = filter valid . collapse . fix' prune . choices
+solve = filter valid . collapse . prune . choices
 
 consistent :: [Choices] -> Bool
 consistent = nodups . concat . filter single
