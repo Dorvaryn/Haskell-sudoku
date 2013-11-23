@@ -1,0 +1,19 @@
+Name:                Sudoku
+Version:             1.0
+Description:         Sudoku Solver in Haskell
+License:             MIT
+Author:              Benjamin Augustin
+Build-Type:          Simple
+Cabal-Version:       >=1.2
+
+Executable sudoku
+    Main-is:           Main.hs
+    ghc-options:
+          -Wall -Werror
+    Build-Depends:     base
+
+Test-Suite sudoku-spec
+    Type:       exitcode-stdio-1.0
+    Main-is:    Spec.hs
+    Build-Depends: base
+                 , hspec

@@ -1,4 +1,9 @@
+module Sudoku
+where
+
 import Data.List
+import Control.Monad.Fix
+
 type Grid = Matrix Value
 type Matrix a = [Row a]
 type Row a = [a]
@@ -15,11 +20,6 @@ rows = id
 
 cols :: Matrix a -> [Row a]
 cols = transpose
-
---transpose :: [[a]] -> [[a]]
---transpose [] = []
---transpose ([]:xs) = transpose xs
---transpose ((x:xs):xss) = (x:[h|(h:_)<-xss]) : transpose (xs:[t|(_:t)<-xss])
 
 chop :: Int -> [a] -> [[a]]
 chop n [] = []
@@ -72,12 +72,11 @@ cp (xs:xss) = [y:ys|y<-xs, ys<-cp xss]
 collapse :: Matrix [a] -> [Matrix a]
 collapse = cp . map cp
 
-fix :: Eq a => ( a-> a) -> a -> a
-fix f x = if x == x' then x else fix f x'
-    where x' = f x
+fix' :: Eq a => ( a-> a) -> a -> a
+fix' process = fix (\rec c -> let processed = process c in if c == processed then c else rec processed) 
 
 solve :: Grid -> [Grid]
-solve = filter valid . collapse . fix prune . choices
+solve = filter valid . collapse . fix' prune . choices
 
 consistent :: [Choices] -> Bool
 consistent = nodups . concat . filter single
